@@ -1,4 +1,4 @@
-import { HStack, Heading, Box, Spacer} from '@chakra-ui/react';
+import { HStack, Heading, Box, Spacer } from '@chakra-ui/react';
 import { MdHolidayVillage } from 'react-icons/md';
 import React from 'react';
 

@@ -1,5 +1,5 @@
 import {
-  Box, Button, ButtonGroup, Flex, HStack, IconButton, useBreakpointValue, Text, Icon
+  Box, Button, ButtonGroup, Flex, HStack, IconButton, useBreakpointValue, Text
 } from '@chakra-ui/react';
 import { FiMenu } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,7 @@ function Navbar() {
     base: true, sm: false, md: true, lg: true,
   });
   const navigate = useNavigate();
-  const [user, setUser] = useState("sdf");
+  const [user, setUser] = useState(null);
 
  
   return (
@@ -24,7 +24,7 @@ function Navbar() {
           <Flex justify="space-between" flex="1">
             {user && (
               <ButtonGroup variant="link" spacing="8">
-                <Button key="Home" onClick={() => navigate('/')}>Home</Button>
+                <Button variant="ghost" onClick={() => navigate('/')}>Home</Button>
                 {['Feed', 'Statistics', 'Notifications'].map((item) => (
                   <Button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}>{item}</Button>
                 ))}

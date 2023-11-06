@@ -48,10 +48,10 @@ function HomePage() {
         />
         <Stack direction="row" spacing="12" mt="12">
           <Button size="lg" onClick={() => navigate('/feed')} colorScheme="blue">
-            Search Cragislist!
+            Search Cragislist
           </Button>
           <Button size="lg" colorScheme="blue">
-            Search Airbnb!
+            Search Airbnb
           </Button>
         </Stack>
       </Box>
