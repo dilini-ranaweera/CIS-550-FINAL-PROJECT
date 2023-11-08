@@ -25,6 +25,16 @@ function HomePage() {
       bg="gray.50"
       backgroundColor="lightblue"
     >
+      <Flex justify="center" mt="8">
+        <Image
+          src={image}
+          alt="Placeholder"
+          h="full"
+          maxW="lg"
+          borderRadius="lg"
+          boxShadow="lg"
+        />
+      </Flex>
       <Box maxW="lg" textAlign="left">
         <Heading as="h1" color="darkblue" size="4xl" mb="8">
           Subletter for Short Stays
@@ -55,16 +65,7 @@ function HomePage() {
           </Button>
         </Stack>
       </Box>
-      <Flex justify="center" mt="8">
-        <Image
-          src={image}
-          alt="Placeholder"
-          w="full"
-          maxW="lg"
-          borderRadius="lg"
-          boxShadow="lg"
-        />
-      </Flex>
+      
     </Flex>
   );
 }

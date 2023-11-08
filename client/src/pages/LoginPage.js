@@ -4,7 +4,7 @@ import {
   useToast, Box, Button, FormControl, FormLabel, Heading, Input, Stack, InputRightElement,
   InputGroup, IconButton,
 } from '@chakra-ui/react';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import Toast from '../components/Toast';
 
 function LoginPage() {
