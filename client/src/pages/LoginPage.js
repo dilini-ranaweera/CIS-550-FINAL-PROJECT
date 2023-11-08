@@ -8,7 +8,7 @@ import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import Toast from '../components/Toast';
 
 function LoginPage() {
-  const [username, usernameUpdate] = useState('');
+  const [email, setEmail] = useState('');
   const [password, passwordUpdate] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -17,7 +17,7 @@ function LoginPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    const data = { username, password };
+    const data = { email, password };
     // postLogin(data).then((resp) => {
     //   switch (resp.status) {
     //     case 201:
@@ -81,9 +81,9 @@ function LoginPage() {
       <Box as="form" onSubmit={handleLogin} p={6} rounded="md" boxShadow="lg" bg="white">
         <Stack spacing={4}>
           <Heading as="h2" size="lg" textAlign="center">User Login</Heading>
-          <FormControl id="username" isRequired>
-            <FormLabel>Username</FormLabel>
-            <Input data-testid="username" type="text" value={username} onChange={(e) => usernameUpdate(e.target.value)} />
+          <FormControl id="email" isRequired>
+            <FormLabel>Email</FormLabel>
+            <Input data-testid="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
           </FormControl>
           <FormControl id="password" isRequired>
             <FormLabel>Password</FormLabel>

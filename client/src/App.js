@@ -5,6 +5,8 @@ import NavBar from './components/NavBar';
 import HomePage from './pages/HomePage';
 import RegistrationPage from './pages/RegistrationPage';
 import LoginPage from './pages/LoginPage';
+import ListingPage from "./pages/ListingPage";
+import ProfilePage from './pages/ProfilePage';
 
 
 
@@ -18,6 +20,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage toast={toast} />} />
           <Route path="/register" element={<RegistrationPage toast={toast} />} />
+          <Route path="/listing" element={<ListingPage />}/>
+          <Route path="profile" element={<ProfilePage/>} />
           {/* <Route path="/feed" element={<ProtectedRoute><ActivityFeed /></ProtectedRoute>} />
           <Route path="/statistics" element={<ProtectedRoute><StatisticsLayout /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><NotificationsLayout /></ProtectedRoute>} />

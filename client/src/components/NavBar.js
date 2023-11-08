@@ -11,7 +11,7 @@ function Navbar() {
     base: true, sm: false, md: true, lg: true,
   });
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState("sdfds");
 
  
   return (
@@ -24,8 +24,8 @@ function Navbar() {
           <Flex justify="space-between" flex="1">
             {user && (
               <ButtonGroup variant="link" spacing="8">
-                <Button variant="ghost" onClick={() => navigate('/')}>Home</Button>
-                {['Feed', 'Statistics', 'Notifications'].map((item) => (
+                <Button key="home" onClick={() => navigate('/')}>Home</Button>
+                {['Listing', 'Statistics', 'Notifications'].map((item) => (
                   <Button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}>{item}</Button>
                 ))}
                 <Button key="Logout">Logout</Button>

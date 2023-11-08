@@ -82,7 +82,7 @@ function RegistrationPage() {
       <Box as="form" onSubmit={handleRegister} p={6} rounded="md" boxShadow="lg" bg="white">
         <Stack spacing={4}>
           <Heading as="h2" size="lg" textAlign="center">User Registration</Heading>
-          <Stack direction="row" justifyContent="space-between">
+          <Stack direction="column" justifyContent="space-between">
             <FormControl id="username" isRequired>
               <FormLabel>Email</FormLabel>
               <Input data-testid="username" type="text" value={username} onChange={(e) => usernameChange(e.target.value)} />
@@ -101,17 +101,12 @@ function RegistrationPage() {
                 </InputRightElement>
               </InputGroup>
             </FormControl>
-          </Stack>
-          <Stack direction="row" justifyContent="space-between">
-            <FormControl id="fullname" isRequired>
-              <FormLabel>Full Name</FormLabel>
-              <Input data-testid="fullname" type="text" value={name} onChange={(e) => nameChange(e.target.value)} />
-            </FormControl>
             <FormControl id="city" isRequired>
               <FormLabel>City</FormLabel>
               <Input data-testid="city" type="text" value={email} onChange={(e) => emailChange(e.target.value)} />
             </FormControl>
           </Stack>
+            
           
           <Stack direction="row" justifyContent="space-between">
             <Button data-testid="register" type="submit" colorScheme="blue">Register</Button>
