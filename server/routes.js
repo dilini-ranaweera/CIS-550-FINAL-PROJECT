@@ -82,8 +82,8 @@ const listings_per_city = async function(req, res) {
 const average_price = async function(req, res) {
   connection.query(`
   SELECT AVG(L.price)
-FROM Airbnb A JOIN Listing L ON A.id = L.id
-WHERE L.neighborhood = '${req.params.neighborhood}'
+  FROM Airbnb A JOIN Listing L ON A.id = L.id
+  WHERE L.neighborhood = '${req.params.neighborhood}'
 
 ` ,
   (err, data) => {
@@ -126,8 +126,8 @@ const top_neighborhoods = async function(req, res) {
 const user_info = async function(req, res) {
   connection.query(`
   SELECT city, password
-FROM User
-WHERE email = '${req.params.email}'
+  FROM User
+  WHERE email = '${req.params.email}'
 
 ` ,
   (err, data) => {
@@ -145,197 +145,149 @@ WHERE email = '${req.params.email}'
  * ADVANCED ROUTES *
  ************************/
 
-// Route 7: GET /top_songs
-const top_songs = async function(req, res) {
-  const page = req.query.page;
-  // TODO (TASK 8): use the ternary (or nullish) operator to set the pageSize based on the query or default to 10
-  const pageSize = req.query.page_size ?? 10;
-
-  if (!page) {
-    // TODO (TASK 9)): query the database and return all songs ordered by number of plays (descending)
-    // Hint: you will need to use a JOIN to get the album title as well
-    
-    connection.query(`
-      SELECT S.song_id, S.title, A.album_id, A.title AS album, S.plays
-      FROM Albums A, Songs S
-      WHERE A.album_id = S.album_id
-      ORDER BY S.plays DESC
-  ` ,
-    (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err);
-        res.json({});
-      } else {
-          data_list = [];
-          for(let i = 0; i < data.length; i++) {
-            data_list.push(data[i]);
-          }
-          res.json(data_list);
-      }
-    });
-
-  } else {
-    // TODO (TASK 10): reimplement TASK 9 with pagination
-    // Hint: use LIMIT and OFFSET (see https://www.w3schools.com/php/php_mysql_select_limit.asp)
-    
-    connection.query(`
-      SELECT S.song_id, S.title, A.album_id, A.title AS album, S.plays
-      FROM Albums A, Songs S
-      WHERE A.album_id = S.album_id
-      ORDER BY S.plays DESC
-      LIMIT ${pageSize} 
-      OFFSET ${(page - 1) * pageSize}
-`   ,
-    (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err);
-        res.json({});
-      } else {
-          data_list = [];
-          for(let i = 0; i < data.length; i++) {
-            data_list.push(data[i]);
-          }
-          res.json(data_list);
-      }
-    });
-  }
-}
-
-// Route 8: GET /top_albums
-const top_albums = async function(req, res) {
-  // TODO (TASK 11): return the top albums ordered by aggregate number of plays of all songs on the album (descending), with optional pagination (as in route 7)
-  // Hint: you will need to use a JOIN and aggregation to get the total plays of songs in an album
-
-  const page = req.query.page;
-  const pageSize = req.query.page_size ?? 10;
-
-  if (!page) {
-    connection.query(`
-    WITH MegaTable AS (
-      SELECT A.album_id AS album_id, A.title AS title, S.title AS song_title, S.plays AS plays
-      FROM Albums A 
-      JOIN Songs S
-      ON A.album_id = S.album_id
-    )
-
-    SELECT album_id, title, SUM(plays) AS plays
-    FROM MegaTable
-    GROUP BY album_id, title
-    ORDER BY SUM(plays) DESC
-  ` ,
-    (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err);
-        res.json({});
-      } else {
-          data_list = [];
-          for(let i = 0; i < data.length; i++) {
-            data_list.push(data[i]);
-          }
-          res.json(data_list);
-        }
-    });
-
-  } else {   
-    connection.query(`
-      WITH MegaTable AS (
-        SELECT A.album_id AS album_id, A.title AS title, S.title AS song_title, S.plays AS plays
-        FROM Albums A 
-        JOIN Songs S
-        ON A.album_id = S.album_id
-      )
-
-      SELECT album_id, title, SUM(plays) AS plays
-      FROM MegaTable
-      GROUP BY album_id, title
-      ORDER BY SUM(plays) DESC
-      LIMIT ${pageSize} 
-      OFFSET ${(page - 1) * pageSize}
-`   ,
-    (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err);
-        res.json({});
-      } else {
-          data_list = [];
-          for(let i = 0; i < data.length; i++) {
-            data_list.push(data[i]);
-          }
-          res.json(data_list);
-      }
-    });
-  }
-  
-}
-
-// Route 9: GET /search_albums
-const search_songs = async function(req, res) {
-  // TODO (TASK 12): return all songs that match the given search query with parameters defaulted to those specified in API spec ordered by title (ascending)
-  // Some default parameters have been provided for you, but you will need to fill in the rest
-  const title = req.query.title ?? '';
-  const durationLow = req.query.duration_low ?? 60;
-  const durationHigh = req.query.duration_high ?? 660;
-  const playsLow = req.query.plays_low ?? 0;
-  const playsHigh = req.query.plays_high ?? 1100000000;
-  const danceabilityLow = req.query.danceability_low ?? 0;
-  const danceabilityHigh = req.query.danceability_high ?? 1;
-  const energyLow = req.query.energy_low ?? 0;
-  const energyHigh = req.query.energy_high ?? 1;
-  const valenceLow = req.query.valence_low ?? 0;
-  const valenceHigh = req.query.valence_high ?? 1;
-  const explicit = req.query.explicit ?? 0;
-
-  if (title === '') {
-    connection.query(`
+// Route 6: GET /airbnb_no_craiglist
+// This query selects all Airbnb listings in cities without craigslist
+const airbnb_no_craiglist = async function(req, res) {
+  connection.query(`
+  WITH Cl AS ( 
+    SELECT C.id, Name, Price, Neighborhood, City, Date 	
+    FROM Craigslist C JOIN Listing L ON C.id = L.id
+    ), 
+    SELECT Name, Price, Neighborhood, City, Date
+    FROM Airbnb A  JOIN Listing L ON A.id = L.id
+    WHERE NOT EXIST (
       SELECT *
-      FROM Songs S
-      WHERE ${durationLow} <= S.duration AND ${durationHigh} >= S.duration
-      AND S.explicit <= ${explicit}
-      AND ${playsLow} <= S.plays AND ${playsHigh} >= S.plays
-      AND ${danceabilityLow} <= S.danceability AND ${danceabilityHigh} >= S.danceability
-      AND ${energyLow} <= S.energy AND ${energyHigh} >= S.energy
-      AND ${valenceLow} <= S.valence AND ${valenceHigh} >= S.valence
-      ORDER BY S.title ASC
-    `   ,
-      (err, data) => {
-        if (err || data.length === 0) {
-          console.log(err);
-          res.json([]);
-        } else {
-            data_list = [];
-            for(let i = 0; i < data.length; i++) {
-              data_list.push(data[i]);
-            }
-            res.json(data_list);
-        }
-      });
-  } else if (title) {
-      connection.query(`
-        SELECT *
-        FROM Songs S
-        WHERE ${durationLow} <= S.duration AND ${durationHigh} >= S.duration
-        AND S.explicit <= ${explicit}
-        AND ${playsLow} <= S.plays AND ${playsHigh} >= S.plays
-        AND ${danceabilityLow} <= S.danceability AND ${danceabilityHigh} >= S.danceability
-        AND ${energyLow} <= S.energy AND ${energyHigh} >= S.energy
-        AND ${valenceLow} <= S.valence AND ${valenceHigh} >= S.valence
-        AND S.title LIKE '%${title}%'
-        ORDER BY S.title ASC
-        `   ,
-        (err, data) => {
-          if (err || data.length === 0) {
-            console.log(err);
-            res.json([]);
-          } else {
-              data_list = [];
-              for(let i = 0; i < data.length; i++) {
-                data_list.push(data[i]);
-              }
-              res.json(data_list);
-          }
-      });
-  }
+      FROM Cl C
+      WHERE L.city = C.city
+    )
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
 }
+
+
+// Route 6: GET /top_rentals/:neighborhood
+// This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
+const top_rentals = async function(req, res) {
+  connection.query(`
+  WITH Ls AS ( 
+    (SELECT C.id, Name, Price / 30 AS Price, Neighborhood, City, Date 	
+  FROM Craigslist C JOIN Listing L ON C.id = L.id 	
+  WHERE L.neighborhood = '${req.params.neighborhood}') 	
+  UNION 	
+  (SELECT a.id, Name, Price, Neighborhood, City, Date 	
+  FROM Airbnb A JOIN Listing L ON A.id = L.id 	
+  WHERE L.neighborhood = '${req.params.neighborhood}')
+  ), 
+  SELECT *
+  FROM Ls
+  ORDER BY Price
+  LIMIT 10
+  
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
+
+// Route 6: GET /common_listings/:email
+// This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
+const common_listings = async function(req, res) {
+  connection.query(`
+  WITH diff_users AS (
+    SELECT s.email AS s1_email, s.ListingID As lID, s2.email AS s2_email
+    FROM Saves s
+    JOIN Saves s2 ON s.ListingID = s2.ListingID AND s.email <> s2.email
+    ),
+    p_diff_users AS (
+    SELECT *
+    FROM diff_users
+    WHERE s1_email = '${req.params.email}'
+    ), recommend_listings AS (
+    SELECT *
+    FROM p_diff_users p
+    JOIN Saves s ON p.s2_email = s.email AND p.lID <> s.ListingID
+    )
+    (SELECT ListingID
+    FROM recommend_listings rl
+    JOIN Airbnb a ON  rl.lID = a.Id
+    JOIN Listing l ON a.Id = l.Id)
+    UNION
+    (SELECT ListingId
+    FROM recommend_listings rl
+    JOIN Craigslist c ON  rl.lID = c.Id
+    JOIN Listing l ON c.Id = l.Id)
+    
+  
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
+
+// Route 6: GET /listings_above_average/:count
+// This query retrieves the names and emails of users who have listings priced above the average price of listing in the same city, 
+// AND have a total count of listings above a given listing count.
+const listings_above_average = async function(req, res) {
+  connection.query(`
+  WITH UL AS (
+    SELECT S.id, U.name, S.email
+  FROM User U JOIN Saves S ON U.email = S.email
+  ),
+  Count_df AS (
+  SELECT email, name, COUNT(*) AS count
+  FROM UL
+  GROUP BY email, name
+  HAVING COUNT(*) > ${req.params.count}
+  ),
+  SELECT DISTINCT U.name, U.email
+  FROM (
+  SELECT UL.id, UL.name, UL.email
+  FROM UL JOIN Count_df c ON c.email = UL.email
+  ) U JOIN Listing L ON U.id = L.id
+  WHERE L.price > (
+    SELECT AVG(price)
+    FROM Listings L2
+    WHERE L2.city = L.city
+  )
+  
+  
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
+
+
+
 
 module.exports = {
   place,
@@ -344,7 +296,8 @@ module.exports = {
   average_price,
   top_neighborhoods,
   user_info,
-  top_songs,
-  top_albums,
-  search_songs,
+  airbnb_no_craiglist,
+  top_rentals,
+  common_listings,
+  listings_above_average
 }
