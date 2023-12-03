@@ -147,7 +147,7 @@ function ProfilePage() {
           {showLocation
             ? (
               <Flex direction="row">
-                <Text fontWeight="bold" fontSize="xl">Location:</Text>
+                <Text fontWeight="bold" fontSize="xl">City:</Text>
                 <Text ml={3} fontSize="xl">{location}</Text>
                 <Spacer />
                 <IconButton variant="ghost" icon={<MdEditSquare />} onClick={() => { setShowLocation(!showLocation); }} />
