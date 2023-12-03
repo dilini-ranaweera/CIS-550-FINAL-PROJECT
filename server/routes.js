@@ -97,6 +97,50 @@ WHERE L.neighborhood = '${req.params.neighborhood}'
 
 }
 
+
+// Route 5: GET /top_neighborhoods
+// Get the top 5 neighborhoods with the cheapest rent in a city.
+const top_neighborhoods = async function(req, res) {
+  connection.query(`
+  SELECT L.neighborhood, AVG(L.price) AS avg_price
+  FROM Airbnb A JOIN Listing L ON A.id = L.id
+  WHERE L.city = '${req.params.city}'
+  GROUP BY L.neighborhood
+  ORDER BY avg_price
+  LIMIT 5 
+
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
+// Route 6: GET /user_info/:email
+// This route gets all associated user information.
+const user_info = async function(req, res) {
+  connection.query(`
+  SELECT city, password
+FROM User
+WHERE email = '${req.params.email}'
+
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
 /************************
  * ADVANCED ROUTES *
  ************************/
@@ -298,6 +342,8 @@ module.exports = {
   listing_in_price_range,
   listings_per_city,
   average_price,
+  top_neighborhoods,
+  user_info,
   top_songs,
   top_albums,
   search_songs,
