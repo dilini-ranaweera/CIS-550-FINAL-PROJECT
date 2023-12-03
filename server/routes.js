@@ -16,7 +16,7 @@ connection.connect((err) => err && console.log(err));
  * ROUTES *
  ******************/
 
-// Route 1: GET /places/:email
+// Route 1: GET /place/:email
 // a route that given an email, returns all information about the place
 const place = async function(req, res) {
   connection.query(`
