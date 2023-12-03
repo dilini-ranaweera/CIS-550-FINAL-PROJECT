@@ -58,7 +58,7 @@ const listing_in_price_range = async function(req, res) {
   });
 }
 
-// Route 5: GET /listings_per_city
+// Route 3: GET /listings_per_city
 const listings_per_city = async function(req, res) {
   connection.query(`
   SELECT City, COUNT(*)
@@ -77,33 +77,28 @@ const listings_per_city = async function(req, res) {
 
 }
 
-// Route 6: GET /album_songs/:album_id
-const album_songs = async function(req, res) {
-  // TODO (TASK 7): implement a route that given an album_id, returns all songs on that album ordered by track number (ascending)
-
+// Route 4: GET /average_price
+// Get the average price of Airbnb listings in a neighborhood.
+const average_price = async function(req, res) {
   connection.query(`
-  SELECT S.song_id, S.title, S.number, S.duration, S.plays
-  FROM Songs S
-  WHERE S.album_id = '${req.params.album_id}'
-  ORDER BY S.number ASC
+  SELECT AVG(L.price)
+FROM Airbnb A JOIN Listing L ON A.id = L.id
+WHERE L.neighborhood = '${req.params.neighborhood}'
+
 ` ,
   (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
       res.json({});
     } else {
-        data_list = [];
-        for(let i = 0; i < data.length; i++) {
-          data_list.push(data[i]);
-        }
-        res.json(data_list);
+        res.json(data);
     }
   });
 
 }
 
 /************************
- * ADVANCED INFO ROUTES *
+ * ADVANCED ROUTES *
  ************************/
 
 // Route 7: GET /top_songs
@@ -302,7 +297,7 @@ module.exports = {
   place,
   listing_in_price_range,
   listings_per_city,
-  album_songs,
+  average_price,
   top_songs,
   top_albums,
   search_songs,
