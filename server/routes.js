@@ -145,7 +145,7 @@ const user_info = async function(req, res) {
  * ADVANCED ROUTES *
  ************************/
 
-// Route 6: GET /airbnb_no_craiglist
+// Route 7: GET /airbnb_no_craiglist
 // This query selects all Airbnb listings in cities without craigslist
 const airbnb_no_craiglist = async function(req, res) {
   connection.query(`
@@ -173,7 +173,7 @@ const airbnb_no_craiglist = async function(req, res) {
 }
 
 
-// Route 6: GET /top_rentals/:neighborhood
+// Route 8: GET /top_rentals/:neighborhood
 // This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
 const top_rentals = async function(req, res) {
   connection.query(`
@@ -204,7 +204,7 @@ const top_rentals = async function(req, res) {
 }
 
 
-// Route 6: GET /common_listings/:email
+// Route 9: GET /common_listings/:email
 // This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
 const common_listings = async function(req, res) {
   connection.query(`
@@ -246,7 +246,7 @@ const common_listings = async function(req, res) {
 }
 
 
-// Route 6: GET /listings_above_average/:count
+// Route 10: GET /listings_above_average/:count
 // This query retrieves the names and emails of users who have listings priced above the average price of listing in the same city, 
 // AND have a total count of listings above a given listing count.
 const listings_above_average = async function(req, res) {

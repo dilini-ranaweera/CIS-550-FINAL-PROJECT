@@ -8,7 +8,7 @@ app.use(cors({
   origin: '*',
 }));
 
-// module.exports = {
+// Our 10 routes
 //   place,
 //   listing_in_price_range,
 //   listings_per_city,
@@ -19,7 +19,6 @@ app.use(cors({
 //   top_rentals,
 //   common_listings,
 //   listings_above_average
-// }
 
 
 
