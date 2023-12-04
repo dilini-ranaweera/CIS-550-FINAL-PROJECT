@@ -16,9 +16,9 @@ connection.connect((err) => err && console.log(err));
  * ROUTES *
  ******************/
 
-// Route 1: GET /place/:email
-// a route that given an email, returns all information about the place
-const place = async function(req, res) {
+// Route 1: GET /user_saves/:email
+// a route that given an email, returns all the saves corresponding to that user
+const user_saves = async function(req, res) {
   connection.query(`
     SELECT *
     FROM Saves S
@@ -40,11 +40,11 @@ const place = async function(req, res) {
 
 const listing_in_price_range = async function(req, res) {
   connection.query(`
-    (SELECT Name, Price, Neighborhood, City, Last_review AS Date
+    (SELECT Name, Price, Neighborhood, City
       FROM Airbnb A JOIN Listing L ON A.id = L.id
       WHERE L.price <= ${req.params.price})
       UNION
-      (SELECT Name, Price, Neighborhood, City, Date
+      (SELECT Name, Price, Neighborhood, City
       FROM Craigslist C JOIN Listing L ON C.id = L.id
       WHERE L.price <= ${req.params.price})
 ` ,
@@ -53,7 +53,7 @@ const listing_in_price_range = async function(req, res) {
       console.log(err);
       res.json({});
     } else {
-      res.json(data[0]);
+      res.json(data);
     }
   });
 }
@@ -77,7 +77,7 @@ const listings_per_city = async function(req, res) {
 
 }
 
-// Route 4: GET /average_price
+// Route 4: GET /average_price/:neighborhood
 // Get the average price of Airbnb listings in a neighborhood.
 const average_price = async function(req, res) {
   connection.query(`
@@ -98,7 +98,7 @@ const average_price = async function(req, res) {
 }
 
 
-// Route 5: GET /top_neighborhoods
+// Route 5: GET /top_neighborhoods/:city
 // Get the top 5 neighborhoods with the cheapest rent in a city.
 const top_neighborhoods = async function(req, res) {
   connection.query(`
@@ -126,7 +126,7 @@ const top_neighborhoods = async function(req, res) {
 const user_info = async function(req, res) {
   connection.query(`
   SELECT city, password
-  FROM User
+  FROM Users
   WHERE email = '${req.params.email}'
 
 ` ,
@@ -149,17 +149,17 @@ const user_info = async function(req, res) {
 // This query selects all Airbnb listings in cities without craigslist
 const airbnb_no_craiglist = async function(req, res) {
   connection.query(`
-  WITH Cl AS ( 
-    SELECT C.id, Name, Price, Neighborhood, City, Date 	
-    FROM Craigslist C JOIN Listing L ON C.id = L.id
-    ), 
-    SELECT Name, Price, Neighborhood, City, Date
-    FROM Airbnb A  JOIN Listing L ON A.id = L.id
-    WHERE NOT EXIST (
-      SELECT *
-      FROM Cl C
-      WHERE L.city = C.city
-    )
+  WITH Cl AS (SELECT C.id, L.Name, L.Price, L.Neighborhood, L.City, C.Date
+    FROM Craigslist C
+             JOIN Listing L ON C.id = L.id)
+SELECT Name, Price, Neighborhood, City
+FROM Airbnb A
+ JOIN Listing L ON A.id = L.id
+WHERE NOT EXISTS(
+SELECT *
+FROM Cl C
+WHERE L.city = C.city
+)
 ` ,
   (err, data) => {
     if (err || data.length === 0) {
@@ -177,20 +177,19 @@ const airbnb_no_craiglist = async function(req, res) {
 // This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
 const top_rentals = async function(req, res) {
   connection.query(`
-  WITH Ls AS ( 
-    (SELECT C.id, Name, Price / 30 AS Price, Neighborhood, City, Date 	
-  FROM Craigslist C JOIN Listing L ON C.id = L.id 	
-  WHERE L.neighborhood = '${req.params.neighborhood}') 	
-  UNION 	
-  (SELECT a.id, Name, Price, Neighborhood, City, Date 	
-  FROM Airbnb A JOIN Listing L ON A.id = L.id 	
+  WITH Ls AS ((SELECT C.Id, Name, Price / 30 AS Price, Neighborhood, City, Year
+  FROM Craigslist C
+           JOIN Listing L ON C.id = L.id
   WHERE L.neighborhood = '${req.params.neighborhood}')
-  ), 
-  SELECT *
-  FROM Ls
-  ORDER BY Price
-  LIMIT 10
-  
+ UNION
+ (SELECT A.Id, Name, Price, Neighborhood, City, Year
+  FROM Airbnb A
+           JOIN Listing L ON A.id = L.id
+  WHERE L.neighborhood = '${req.params.neighborhood}'))
+SELECT *
+FROM Ls
+ORDER BY Price
+LIMIT 10  
 ` ,
   (err, data) => {
     if (err || data.length === 0) {
@@ -253,7 +252,7 @@ const listings_above_average = async function(req, res) {
   connection.query(`
   WITH UL AS (
     SELECT S.id, U.name, S.email
-  FROM User U JOIN Saves S ON U.email = S.email
+  FROM Users U JOIN Saves S ON U.email = S.email
   ),
   Count_df AS (
   SELECT email, name, COUNT(*) AS count
@@ -290,7 +289,7 @@ const listings_above_average = async function(req, res) {
 
 
 module.exports = {
-  place,
+  user_saves,
   listing_in_price_range,
   listings_per_city,
   average_price,
