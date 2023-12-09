@@ -25,7 +25,7 @@ function Navbar() {
             {user && (
               <ButtonGroup variant="link" spacing="8">
                 <Button key="home" onClick={() => navigate('/')}>Home</Button>
-                {['Listing', 'Statistics', 'Notifications'].map((item) => (
+                {['Listing', 'Statistics'].map((item) => (
                   <Button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}>{item}</Button>
                 ))}
                 <Button key="Logout">Logout</Button>
