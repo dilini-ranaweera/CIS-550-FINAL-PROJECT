@@ -28,12 +28,11 @@ function Navbar() {
                 {['Listing', 'Statistics'].map((item) => (
                   <Button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}>{item}</Button>
                 ))}
-                <Button key="Logout">Logout</Button>
               </ButtonGroup>
             )}
             <HStack spacing="3">
               {user ? (
-                <Button variant="primary" onClick={() => navigate('/profile')}>{user.name}</Button>
+                <Button variant="primary" onClick={() => navigate('/profile')}>User</Button>
               ) : (
                 <Button variant="ghost" onClick={() => navigate('/login')}>Login</Button>
               )}
