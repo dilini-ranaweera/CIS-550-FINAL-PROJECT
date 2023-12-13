@@ -36,7 +36,8 @@ const StatisticsPage = () => {
   //fetch the data for the respective queries
   const handleListingsPerCityData = () => {
     setLoadingLPCD(true);
-    fetch(`http://${config.server_host}:${config.server_port}/listing_per_city`)
+    setStateChangeLPCD(true);
+    fetch(`http://${config.server_host}:${config.server_port}/listings_per_city`)
       .then((res) => res.json())
       .then((resJson) => {
         setlistingsPerCityData(resJson);
@@ -48,10 +49,12 @@ const StatisticsPage = () => {
   const handleAveragePricePerNeighborhoodData = () => {
     setLoadingAPPND(true);
     setStateChangeAPPND(true);
-    fetch(`http://${config.server_host}:${config.server_port}/average_price/${searchTermAPPND}`)
+    fetch(
+      `http://${config.server_host}:${config.server_port}/average_price/${searchTermAPPND}`
+    )
       .then((res) => res.json())
       .then((resJson) => {
-        setaveragePricePerNeighborhoodData(resJson[0]['AVG(L.price)']);
+        setaveragePricePerNeighborhoodData(resJson[0]["AVG(L.price)"]);
         setLoadingAPPND(false);
         console.log(resJson);
       });
@@ -60,13 +63,15 @@ const StatisticsPage = () => {
   const handleTopNeighborhoodsPerCityData = () => {
     setLoadingTNPCD(true);
     setStateChangeTNPCD(true);
-    fetch(`http://${config.server_host}:${config.server_port}/top_neighborhoods/${searchTermTNPCD}`)
+    fetch(
+      `http://${config.server_host}:${config.server_port}/top_neighborhoods/${searchTermTNPCD}`
+    )
       .then((res) => res.json())
       .then((resJson) => {
         setTopNeighborhoodsPerCityData(resJson);
         setLoadingTNPCD(false);
         console.log(resJson);
-        console.log(resJson[0]['neighborhood'])
+        console.log(resJson[0]["neighborhood"]);
       });
   };
 
@@ -75,7 +80,7 @@ const StatisticsPage = () => {
       <Fade in={true}>
         <Box
           p="10vh"
-          color="white"
+          color="black"
           mt="4"
           bg="lightblue"
           rounded="md"
@@ -92,96 +97,122 @@ const StatisticsPage = () => {
         </Box>
       </Fade>
 
-    <div style={{
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    
-    justifyContent: 'center',
-    columnGap: '2rem',
-    marginTop: '2rem',
-    alignItems: 'flex-start',
-}}>
-      <div style={{width: '27%'}}>
-      <Center>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <MdSearch />
-          </InputLeftElement>
-          <Input
-            type="tel"
-            onChange={(e) => setSearchTermLPCD(e.target.value)}
-            placeholder="Type in a City to See all of its Listings...."
-          />
-        </InputGroup>
-        <Button type = 'button' onClick={handleListingsPerCityData}>Search</Button>
-      </Center>
-      </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "wrap",
 
-      <div style={{width: '27%'}}>
-      <Center>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <MdSearch />
-          </InputLeftElement>
-          <Input
-            type="tel"
-            onChange={(e) => setSearchTermAPPND(e.target.value)}
-            placeholder="Type in a Neighhorhood to see the Average Price of a Listing In It..."
-          />
-        </InputGroup>
-        <Button type="button" onClick={handleAveragePricePerNeighborhoodData}>Search</Button>
-      </Center>
-
-      {!stateChangeAPPND ? (<div style={{display: 'none'}}></div>) : (
-        <Center>
-          <Stack spacing={20} direction="row" mt={100}>
-            <VStack>
-              <Text fontSize="1xl">City: {searchTermAPPND}</Text>
-            </VStack>
-            <VStack>
-              <Text fontSize="1xl">
-                Average Price: {averagePricePerNeighborhoodData}
-              </Text>
-            </VStack>
-          </Stack>
-        </Center>
-      )}
-      </div>
-
-      <div style={{width: '27%'}}>
-      <Center>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <MdSearch />
-          </InputLeftElement>
-          <Input
-            type="tel"
-            onChange={(e) => setSearchTermTNPCD(e.target.value)}
-            placeholder="Type in a City to See the Top Neighborhoods In It..."
-          />
-        </InputGroup>
-        <Button onClick={handleTopNeighborhoodsPerCityData}>Search</Button>
-      </Center>
-
-      {!stateChangeTNPCD  ? (<div style={{display: 'none'}}></div>) : (
-        topNeighborhoodsPerCityData.map((neighborhoodData, index) => (
-          <Center key={index}>
-            <Stack spacing={20} direction="row" mt={100}>
-              <VStack>
-                <Text fontSize="1xl">Neighborhood: {neighborhoodData['neighborhood']}</Text>
-              </VStack>
-              <VStack>
-                <Text fontSize="1xl">
-                  Average Price: {neighborhoodData['avg_price']}
-                </Text>
-              </VStack>
-            </Stack>
+          justifyContent: "center",
+          columnGap: "2rem",
+          marginTop: "2rem",
+          alignItems: "flex-start",
+        }}
+      >
+        <div style={{ width: "27%" }}>
+          <Center>
+            <Button type="button" onClick={handleListingsPerCityData}>
+              Click me to see the number of listings per city!
+            </Button>
           </Center>
-        ))
-      )}
+
+          {!stateChangeLPCD ? (
+            <div style={{display: "none"}}></div>
+          ) : (
+            listingsPerCityData.map((listingData, index) => (
+              <Center key={index}>
+                <Stack spacing={20} direction="row" mt={100}>
+                  <VStack>
+                    <Text fontSize="1xl">
+                      City: {listingData["City"]}
+                    </Text>
+                  </VStack>
+                  <VStack>
+                    <Text fontSize="1xl">
+                      Number Of Listings: {listingData["COUNT(*)"]}
+                    </Text>
+                  </VStack>
+                </Stack>
+              </Center>
+            ))
+          )}
+        </div>
+
+        <div style={{ width: "27%" }}>
+          <Center>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <MdSearch />
+              </InputLeftElement>
+              <Input
+                type="tel"
+                onChange={(e) => setSearchTermAPPND(e.target.value)}
+                placeholder="Type in a Neighhorhood to see the Average Price of a Listing In It..."
+              />
+            </InputGroup>
+            <Button
+              type="button"
+              onClick={handleAveragePricePerNeighborhoodData}
+            >
+              Search
+            </Button>
+          </Center>
+
+          {!stateChangeAPPND ? (
+            <div style={{ display: "none" }}></div>
+          ) : (
+            <Center>
+              <Stack spacing={20} direction="row" mt={100}>
+                <VStack>
+                  <Text fontSize="1xl">City: {searchTermAPPND}</Text>
+                </VStack>
+                <VStack>
+                  <Text fontSize="1xl">
+                    Average Price: {averagePricePerNeighborhoodData}
+                  </Text>
+                </VStack>
+              </Stack>
+            </Center>
+          )}
+        </div>
+
+        <div style={{ width: "27%" }}>
+          <Center>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <MdSearch />
+              </InputLeftElement>
+              <Input
+                type="tel"
+                onChange={(e) => setSearchTermTNPCD(e.target.value)}
+                placeholder="Type in a City to See the Top Neighborhoods In It..."
+              />
+            </InputGroup>
+            <Button onClick={handleTopNeighborhoodsPerCityData}>Search</Button>
+          </Center>
+
+          {!stateChangeTNPCD ? (
+            <div style={{ display: "none" }}></div>
+          ) : (
+            topNeighborhoodsPerCityData.map((neighborhoodData, index) => (
+              <Center key={index}>
+                <Stack spacing={20} direction="row" mt={100}>
+                  <VStack>
+                    <Text fontSize="1xl">
+                      Neighborhood: {neighborhoodData["neighborhood"]}
+                    </Text>
+                  </VStack>
+                  <VStack>
+                    <Text fontSize="1xl">
+                      Average Price: {neighborhoodData["avg_price"]}
+                    </Text>
+                  </VStack>
+                </Stack>
+              </Center>
+            ))
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 };
