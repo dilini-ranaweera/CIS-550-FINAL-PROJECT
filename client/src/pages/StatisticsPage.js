@@ -66,6 +66,7 @@ const StatisticsPage = () => {
         setTopNeighborhoodsPerCityData(resJson);
         setLoadingTNPCD(false);
         console.log(resJson);
+        console.log(resJson[0]['neighborhood'])
       });
   };
 
@@ -91,8 +92,18 @@ const StatisticsPage = () => {
         </Box>
       </Fade>
 
-      <div>
-      <Center mt={10} ml={200} mr={200}>
+    <div style={{
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    
+    justifyContent: 'center',
+    columnGap: '2rem',
+    marginTop: '2rem',
+    alignItems: 'flex-start',
+}}>
+      <div style={{width: '27%'}}>
+      <Center>
         <InputGroup>
           <InputLeftElement pointerEvents="none">
             <MdSearch />
@@ -105,8 +116,10 @@ const StatisticsPage = () => {
         </InputGroup>
         <Button type = 'button' onClick={handleListingsPerCityData}>Search</Button>
       </Center>
+      </div>
 
-      <Center mt={10} ml={200} mr={200}>
+      <div style={{width: '27%'}}>
+      <Center>
         <InputGroup>
           <InputLeftElement pointerEvents="none">
             <MdSearch />
@@ -120,24 +133,24 @@ const StatisticsPage = () => {
         <Button type="button" onClick={handleAveragePricePerNeighborhoodData}>Search</Button>
       </Center>
 
-      {!stateChangeAPPND ? (
-        <div className="filler"></div>
-      ) : (
+      {!stateChangeAPPND ? (<div style={{display: 'none'}}></div>) : (
         <Center>
           <Stack spacing={20} direction="row" mt={100}>
             <VStack>
-              <Text fontSize="2xl">City: {searchTermAPPND}</Text>
+              <Text fontSize="1xl">City: {searchTermAPPND}</Text>
             </VStack>
             <VStack>
-              <Text fontSize="2xl">
+              <Text fontSize="1xl">
                 Average Price: {averagePricePerNeighborhoodData}
               </Text>
             </VStack>
           </Stack>
         </Center>
       )}
+      </div>
 
-      <Center mt={10} ml={200} mr={200}>
+      <div style={{width: '27%'}}>
+      <Center>
         <InputGroup>
           <InputLeftElement pointerEvents="none">
             <MdSearch />
@@ -151,18 +164,16 @@ const StatisticsPage = () => {
         <Button onClick={handleTopNeighborhoodsPerCityData}>Search</Button>
       </Center>
 
-      {!stateChangeTNPCD ? (
-        <div className="filler"></div>
-      ) : (
+      {!stateChangeTNPCD  ? (<div style={{display: 'none'}}></div>) : (
         topNeighborhoodsPerCityData.map((neighborhoodData, index) => (
           <Center key={index}>
             <Stack spacing={20} direction="row" mt={100}>
               <VStack>
-                <Text fontSize="2xl">Neighborhood: {neighborhoodData.searchTermAPPND}</Text>
+                <Text fontSize="1xl">Neighborhood: {neighborhoodData['neighborhood']}</Text>
               </VStack>
               <VStack>
-                <Text fontSize="2xl">
-                  Average Price: {neighborhoodData.averagePrice}
+                <Text fontSize="1xl">
+                  Average Price: {neighborhoodData['avg_price']}
                 </Text>
               </VStack>
             </Stack>
@@ -170,6 +181,7 @@ const StatisticsPage = () => {
         ))
       )}
       </div>
+    </div>
     </div>
   );
 };
