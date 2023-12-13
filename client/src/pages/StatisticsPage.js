@@ -37,7 +37,9 @@ const StatisticsPage = () => {
   const handleListingsPerCityData = () => {
     setLoadingLPCD(true);
     setStateChangeLPCD(true);
-    fetch(`http://${config.server_host}:${config.server_port}/listings_per_city`)
+    fetch(
+      `http://${config.server_host}:${config.server_port}/listings_per_city`
+    )
       .then((res) => res.json())
       .then((resJson) => {
         setlistingsPerCityData(resJson);
@@ -117,28 +119,31 @@ const StatisticsPage = () => {
           </Center>
 
           {!stateChangeLPCD ? (
-            <div style={{display: "none"}}></div>
+            <div style={{ display: "none" }}></div>
           ) : (
             listingsPerCityData.map((listingData, index) => (
-              <Center key={index}>
-                <Stack spacing={20} direction="row" mt={100}>
-                  <VStack>
-                    <Text fontSize="1xl">
-                      City: {listingData["City"]}
-                    </Text>
-                  </VStack>
-                  <VStack>
-                    <Text fontSize="1xl">
-                      Number Of Listings: {listingData["COUNT(*)"]}
-                    </Text>
-                  </VStack>
-                </Stack>
-              </Center>
+              <Box border="2px solid black" borderRadius="md" p="2" m={4}>
+                <Center key={index}>
+                  <Stack spacing={20} direction="row">
+                    <VStack>
+                      <Text fontSize="1xl">City: {listingData["City"]}</Text>
+                    </VStack>
+                    <VStack>
+                      <Text fontSize="1xl">
+                        Number Of Listings: {listingData["COUNT(*)"]}
+                      </Text>
+                    </VStack>
+                  </Stack>
+                </Center>
+              </Box>
             ))
           )}
         </div>
 
         <div style={{ width: "27%" }}>
+        <Heading as="h6" size="1x1" color="black" mb={2}>
+            Type in a Neighborhood to see the Average Price of a Listing in It.
+          </Heading>
           <Center>
             <InputGroup>
               <InputLeftElement pointerEvents="none">
@@ -147,7 +152,7 @@ const StatisticsPage = () => {
               <Input
                 type="tel"
                 onChange={(e) => setSearchTermAPPND(e.target.value)}
-                placeholder="Type in a Neighhorhood to see the Average Price of a Listing In It..."
+                placeholder="Type in a Neighhorhood:"
               />
             </InputGroup>
             <Button
@@ -161,22 +166,27 @@ const StatisticsPage = () => {
           {!stateChangeAPPND ? (
             <div style={{ display: "none" }}></div>
           ) : (
-            <Center>
-              <Stack spacing={20} direction="row" mt={100}>
-                <VStack>
-                  <Text fontSize="1xl">City: {searchTermAPPND}</Text>
-                </VStack>
-                <VStack>
-                  <Text fontSize="1xl">
-                    Average Price: {averagePricePerNeighborhoodData}
-                  </Text>
-                </VStack>
-              </Stack>
-            </Center>
+            <Box border="2px solid black" borderRadius="md" p="2" m={4}>
+              <Center>
+                <Stack spacing={20} direction="row">
+                  <VStack>
+                    <Text fontSize="1xl">City: {searchTermAPPND}</Text>
+                  </VStack>
+                  <VStack>
+                    <Text fontSize="1xl">
+                      Average Price: {averagePricePerNeighborhoodData}
+                    </Text>
+                  </VStack>
+                </Stack>
+              </Center>
+            </Box>
           )}
         </div>
 
         <div style={{ width: "27%" }}>
+        <Heading as="h6" size="1x1" color="black" mb={8}>
+            Type in a City to see the top neighborhoods in it.
+          </Heading>
           <Center>
             <InputGroup>
               <InputLeftElement pointerEvents="none">
@@ -195,20 +205,22 @@ const StatisticsPage = () => {
             <div style={{ display: "none" }}></div>
           ) : (
             topNeighborhoodsPerCityData.map((neighborhoodData, index) => (
-              <Center key={index}>
-                <Stack spacing={20} direction="row" mt={100}>
-                  <VStack>
-                    <Text fontSize="1xl">
-                      Neighborhood: {neighborhoodData["neighborhood"]}
-                    </Text>
-                  </VStack>
-                  <VStack>
-                    <Text fontSize="1xl">
-                      Average Price: {neighborhoodData["avg_price"]}
-                    </Text>
-                  </VStack>
-                </Stack>
-              </Center>
+              <Box border="2px solid black" borderRadius="md" p="2" m={4}>
+                <Center key={index}>
+                  <Stack spacing={20} direction="row">
+                    <VStack>
+                      <Text fontSize="1xl">
+                        Neighborhood: {neighborhoodData["neighborhood"]}
+                      </Text>
+                    </VStack>
+                    <VStack>
+                      <Text fontSize="1xl">
+                        Average Price: {neighborhoodData["avg_price"]}
+                      </Text>
+                    </VStack>
+                  </Stack>
+                </Center>
+              </Box>
             ))
           )}
         </div>
