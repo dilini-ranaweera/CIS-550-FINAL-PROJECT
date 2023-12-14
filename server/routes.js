@@ -172,6 +172,41 @@ WHERE L.city = C.city
 
 }
 
+const get_airbnb = async function(req, res) {
+  connection.query(`
+SELECT Name, Price, Neighborhood, City
+FROM Airbnb A
+ JOIN Listing L ON A.id = L.id
+WHERE L.city = '${req.query.city}'
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
+    } else {
+        res.json(data);
+    }
+  });
+}
+
+const get_craigslist = async function(req, res) {
+  connection.query(`
+SELECT Name, Price, Neighborhood, City
+FROM Craigslist C
+ JOIN Listing L ON C.id = L.id
+WHERE L.city = '${req.query.city}'
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
 
 // Route 8: GET /top_rentals/:neighborhood
 // This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
@@ -230,8 +265,6 @@ const common_listings = async function(req, res) {
     FROM recommend_listings rl
     JOIN Craigslist c ON  rl.lID = c.Id
     JOIN Listing l ON c.Id = l.Id)
-    
-  
 ` ,
   (err, data) => {
     if (err || data.length === 0) {
@@ -298,5 +331,7 @@ module.exports = {
   airbnb_no_craiglist,
   top_rentals,
   common_listings,
-  listings_above_average
+  listings_above_average,
+  get_airbnb,
+  get_craigslist
 }

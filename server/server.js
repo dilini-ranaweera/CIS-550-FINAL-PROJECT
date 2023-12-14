@@ -35,6 +35,8 @@ app.get('/airbnb_no_craiglist', routes.airbnb_no_craiglist);
 app.get('/top_rentals/:neighborhood', routes.top_rentals);
 app.get('/common_listings/:email', routes.common_listings);
 app.get('/listings_above_average/:count', routes.listings_above_average);
+app.get('/listings/airbnb', routes.get_airbnb);
+app.get('/listings/craigslist', routes.get_craigslist);
 
 app.listen(config.server_port, () => {
   console.log(`Server running at http://${config.server_host}:${config.server_port}/`)
