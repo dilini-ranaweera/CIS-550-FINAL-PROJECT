@@ -5,7 +5,7 @@ import {Card, CardBody, Image, Stack, Heading, Text, Divider, CardFooter, Button
 function AirbnbListing({name, city, price}) {
   return (
     <div>
-      <Card maxW='sm'>
+      <Card w='sm'>
         <CardBody>
           <Stack mt='6' spacing='3'>
             <Heading size='md'>{name}</Heading>
