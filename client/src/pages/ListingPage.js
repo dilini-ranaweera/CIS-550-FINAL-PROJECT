@@ -1,48 +1,158 @@
-import React, {useState} from 'react';
-import {Card, CardBody, Image, Stack, Heading, Text, 
-    Divider, CardFooter, ButtonGroup, Button, VStack, Center, Input, InputGroup, 
-    InputLeftElement
-
+import React, {useEffect, useState} from 'react';
+import {useLocation} from 'react-router-dom';
+import {Stack, Text, Button, VStack, Center, Input, InputGroup, 
+  InputLeftElement
 } from '@chakra-ui/react';
 import {MdSearch} from 'react-icons/md'
 import AirbnbListing from './AirbnbListing';
-import CraigListing from './AirbnbListing';
+import CraigListing from './CraigListing';
+const config = require('../config.json');
 
-const ListingPage = props => {
+const ListingPage = () => {
+  const location = useLocation();
+  const [searchInput, setSearchInput] = useState("");
+  const [airbnb, setAirbnb] = useState([]);
+  const [craigslist, setCraigslist] = useState([]);
+  const [priceInput, setPriceInput] = useState("");
+  const [showCraigslist, setShowCraigslist] = useState(true);
 
-    const[search, setSearch] = useState("");
-    
-    return (
-        <div>
-        <Center mt={10} ml={200} mr={200}>
-            <InputGroup>
-            <InputLeftElement pointerEvents='none'>
-            <MdSearch />
-            </InputLeftElement>
-            <Input type='tel' onChange={e=> setSearch(e.target.value)}placeholder='Search for a Listing...' />
-            </InputGroup>
-            <Button>Search</Button>
-        </Center>
-        <Center>
-        {search!= "" && <Text>Searching for: {search}</Text>}
-        </Center>
-        <Center>
-            <Stack spacing={20} direction='row' mt={100}>
-                
-                <VStack>
-                    <Text fontSize='5xl'>Airbnb Listings</Text>
-                    <AirbnbListing/>
-                </VStack>
-                <VStack>
-                    <Text fontSize='5xl'>Cragislist Listings</Text>
-                    <CraigListing />
-                </VStack>
-            </Stack>
+  useEffect(() => {
+    if (location.state) {
+      const {search, listing} = location.state
+      if (listing === "airbnb") {
+        fetch(`http://${config.server_host}:${config.server_port}/listings/airbnb?city=${search}`)
+          .then(res => res.json())
+          .then((data) => {
+            const arr = data.slice(0, 20)
+            setAirbnb(arr)
+          })
+      } else {
+        fetch(`http://${config.server_host}:${config.server_port}/listings/craigslist?city=${search}`)
+          .then(res => res.json())
+          .then((data) => {
+            const arr = data.slice(0, 20)
+            setCraigslist(arr)
+          })
+      }
+    }
+  }, [location.state]);
 
-            
-        </Center>
-        </div>
-    );
+  const searchListing = () => {
+    if (priceInput === "") {
+      fetch(`http://${config.server_host}:${config.server_port}/airbnb_no_craiglist`)
+      .then(res => res.json())
+      .then((data) => {
+        data.forEach((city) => {
+          if (city.City === searchInput) {
+            setShowCraigslist(false)
+          }
+        });
+        if (showCraigslist) {
+          fetch(`http://${config.server_host}:${config.server_port}/listings/craigslist?city=${searchInput}`)
+            .then(res => res.json())
+            .then((data) => {
+              const arr = data.slice(0, 50)
+              setCraigslist(arr)
+            })
+        }
+        fetch(`http://${config.server_host}:${config.server_port}/listings/airbnb?city=${searchInput}`)
+          .then(res => res.json())
+          .then((data) => {
+            const arr = data.slice(0, 50)
+            setAirbnb(arr)
+          })
+      })
+    } else {
+      const price = Number(priceInput)
+      fetch(`http://${config.server_host}:${config.server_port}/airbnb_no_craiglist`)
+      .then(res => res.json())
+      .then((data) => {
+        data.forEach((city) => {
+          if (city.City === searchInput) {
+            setShowCraigslist(false)
+          }
+        });
+        if (showCraigslist) {
+          fetch(`http://${config.server_host}:${config.server_port}/craigslist_in_price_range?price=${price}&city=${searchInput}`)
+            .then(res => res.json())
+            .then((data) => {
+              const arr = data.slice(0, 50)
+              setCraigslist(arr)
+            })
+        }
+        fetch(`http://${config.server_host}:${config.server_port}/airbnb_in_price_range?price=${price}&city=${searchInput}`)
+          .then(res => res.json())
+          .then((data) => {
+            const arr = data.slice(0, 50)
+            setAirbnb(arr)
+          })
+      })
+    }
+  }
+  
+  const searchCheapest = () => {
+    fetch(`http://${config.server_host}:${config.server_port}/top_rentals?city=${searchInput}`)
+      .then(res => res.json())
+      .then((data) => {
+        let air = []
+        let craig = []
+        data.forEach((listing) => {
+          if (listing.Type == "airbnb") {
+            air.push({
+              Name: listing.Name,
+              Price: listing.Price,
+              Neighborhood: listing.Neighborhood,
+              City: listing.City
+            })
+          } else {
+            craig.push({
+              Name: listing.Name,
+              Price: listing.Price,
+              Neighborhood: listing.Neighborhood,
+              City: listing.City
+            })
+          }
+        })
+        setAirbnb(air)
+        setCraigslist(craig)
+      })
+  }
+  
+  return (
+    <div>
+      <Center mt={10} ml={200} mr={200}>
+        <InputGroup>
+        <InputLeftElement pointerEvents='none'>
+        <MdSearch />
+        </InputLeftElement>
+        <Input onChange={e=> setSearchInput(e.target.value)} placeholder='Search for a city to stay...' />
+        <Input onChange={e=> setPriceInput(e.target.value)} placeholder='Max price for your stay: $/day' />
+        </InputGroup>
+        <Button onClick={() => searchListing()}>Search</Button>
+        <Button onClick={() => searchCheapest()}>Search Cheapest</Button>
+      </Center>
+      <Center>
+        <Stack spacing={20} direction='row' mt={100}> 
+          <VStack>
+            <Text fontSize='5xl'>Airbnb Listings</Text>
+            {
+              airbnb.map((listing) => <AirbnbListing key={listing.Name} name={listing.Name} city={listing.City} price={listing.Price}/>)
+            }
+          </VStack>
+          {
+            showCraigslist && (
+            <VStack>
+                <Text fontSize='5xl'>Cragislist Listings</Text>
+                {
+                  craigslist.map((listing) => <CraigListing key={listing.Name} name={listing.Name} city={listing.City} price={listing.Price} neighborhood={listing.Neighborhood}/>)
+                }
+            </VStack>
+            )
+          }
+        </Stack>
+      </Center>
+    </div>
+  );
 };
 
 
