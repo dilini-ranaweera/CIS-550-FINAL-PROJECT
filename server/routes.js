@@ -40,20 +40,32 @@ const user_saves = async function (req, res) {
 // Route 2: GET /listings_in_price_range/:price
 // A route that gets all the Listing (Airbnb and Craigslist) within a specific price range.
 
-const listing_in_price_range = async function(req, res) {
+const airbnb_in_price_range = async function(req, res) {
   connection.query(`
-    (SELECT Name, Price, Neighborhood, City
+    SELECT Name, Price, Neighborhood, City, 'airbnb' AS Type
       FROM Airbnb A JOIN Listing L ON A.id = L.id
-      WHERE L.price <= ${req.params.price})
-      UNION
-      (SELECT Name, Price, Neighborhood, City
-      FROM Craigslist C JOIN Listing L ON C.id = L.id
-      WHERE L.price <= ${req.params.price})
+      WHERE L.price <= ${req.query.price} AND L.city = '${req.query.city}' AND L.Name IS NOT NULL
 ` ,
   (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
-      res.json({});
+      res.json([]);
+    } else {
+      res.json(data);
+    }
+  });
+}
+
+const craigslist_in_price_range = async function(req, res) {
+  connection.query(`
+  SELECT Name, Price, Neighborhood, City, 'craigslist' AS Type
+  FROM Craigslist C JOIN Listing L ON C.id = L.id
+  WHERE L.price / 30 <= ${req.query.price} AND L.city = '${req.query.city}' AND L.Name IS NOT NULL
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
     } else {
       res.json(data);
     }
@@ -152,16 +164,52 @@ const user_info = async function (req, res) {
 const airbnb_no_craiglist = async function(req, res) {
   connection.query(`
   WITH Cl AS (SELECT C.id, L.Name, L.Price, L.Neighborhood, L.City, C.Date
-    FROM Craigslist C
-             JOIN Listing L ON C.id = L.id)
+    FROM Craigslist C JOIN Listing L ON C.id = L.id),
+No_Craig AS (SELECT City
+FROM Airbnb A
+    JOIN Listing L ON A.id = L.id
+    WHERE NOT EXISTS(
+    SELECT *
+    FROM Cl C
+    WHERE L.city = C.city
+    ))
+SELECT DISTINCT City
+FROM No_Craig
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
+        res.json(data);
+    }
+  });
+
+}
+
+const get_airbnb = async function(req, res) {
+  connection.query(`
 SELECT Name, Price, Neighborhood, City
 FROM Airbnb A
  JOIN Listing L ON A.id = L.id
-WHERE NOT EXISTS(
-SELECT *
-FROM Cl C
-WHERE L.city = C.city
-)
+WHERE L.city = '${req.query.city}'
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
+    } else {
+        res.json(data);
+    }
+  });
+}
+
+const get_craigslist = async function(req, res) {
+  connection.query(`
+SELECT Name, Price, Neighborhood, City
+FROM Craigslist C
+ JOIN Listing L ON C.id = L.id
+WHERE L.city = '${req.query.city}'
 ` ,
   (err, data) => {
     if (err || data.length === 0) {
@@ -179,15 +227,15 @@ WHERE L.city = C.city
 // This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
 const top_rentals = async function(req, res) {
   connection.query(`
-  WITH Ls AS ((SELECT C.Id, Name, Price / 30 AS Price, Neighborhood, City, Year
+  WITH Ls AS ((SELECT C.Id, Name, Price / 30 AS Price, Neighborhood, City, Year, 'craigslist' AS Type
   FROM Craigslist C
            JOIN Listing L ON C.id = L.id
-  WHERE L.neighborhood = '${req.params.neighborhood}')
+  WHERE L.city = '${req.query.city}')
  UNION
- (SELECT A.Id, Name, Price, Neighborhood, City, Year
+ (SELECT A.Id, Name, Price, Neighborhood, City, Year, 'airbnb' AS Type
   FROM Airbnb A
            JOIN Listing L ON A.id = L.id
-  WHERE L.neighborhood = '${req.params.neighborhood}'))
+  WHERE L.city = '${req.query.city}'))
 SELECT *
 FROM Ls
 ORDER BY Price
@@ -206,8 +254,8 @@ LIMIT 10
 
 
 // Route 9: GET /common_listings/:email
-// 
-const common_listings = async function (req, res) {
+// For a given user x, this query selects other listings that have been saved by other users who have saved listings in common with x.
+const common_listings = async function(req, res) {
   connection.query(`
   WITH diff_users AS (
     SELECT s.email AS s1_email, s.ListingID As lID, s2.email AS s2_email
@@ -231,13 +279,14 @@ const common_listings = async function (req, res) {
     UNION
     (SELECT DISTINCT ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'AirBnb' AS ListingType
     FROM recommend_listings rl
-    JOIN Craigslist c ON  ListingID = c.Id
-    JOIN Listing l ON ListingId = l.Id)` ,
-    (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err);
-        res.json({});
-      } else {
+    JOIN Craigslist c ON  rl.lID = c.Id
+    JOIN Listing l ON c.Id = l.Id)
+` ,
+  (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json({});
+    } else {
         res.json(data);
       }
     });
@@ -277,13 +326,10 @@ LIMIT(20)
 
 }
 
-
-
-
-
 module.exports = {
   user_saves,
-  listing_in_price_range,
+  airbnb_in_price_range,
+  craigslist_in_price_range,
   listings_per_city,
   average_price,
   top_neighborhoods,
@@ -291,5 +337,7 @@ module.exports = {
   airbnb_no_craiglist,
   top_rentals,
   common_listings,
-  listings_above_average
+  listings_above_average,
+  get_airbnb,
+  get_craigslist
 }

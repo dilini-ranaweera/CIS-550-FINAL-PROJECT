@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -13,8 +13,7 @@ import {
 import image from './image.webp'
 
 function HomePage() {
-  const navigate = useNavigate();
-  const [me, setMe] = useState({});
+  const [searchInput, setSearchInput] = useState('');
 
   return (
     <Flex
@@ -45,7 +44,7 @@ function HomePage() {
           your Short Stay!
         </Box>
         <Input
-          placeholder="Search for a place to stay..."
+          placeholder="Search for a city to stay..."
           size="lg"
           w="100%"
           maxW="lg"
@@ -55,14 +54,31 @@ function HomePage() {
           borderWidth="1px"
           borderColor="gray.300"
           variant="filled"
+          onChange={(e) => setSearchInput(e.target.value)}
         />
         <Stack direction="row" spacing="12" mt="12">
-          <Button size="lg" onClick={() => navigate('/feed')} colorScheme="blue">
-            Search Cragislist
-          </Button>
-          <Button size="lg" colorScheme="blue">
-            Search Airbnb
-          </Button>
+          <Link
+            to="/listing"
+            state={{
+              search: searchInput,
+              listing: "craigslist"
+            }}
+          >
+            <Button size="lg" colorScheme="blue">
+              Search Cragislist
+            </Button>
+          </Link>
+          <Link
+            to="/listing"
+            state={{
+              search: searchInput,
+              listing: "airbnb"
+            }}
+          >
+            <Button size="lg" colorScheme="blue">
+              Search Airbnb
+            </Button>
+          </Link>
         </Stack>
       </Box>
       
