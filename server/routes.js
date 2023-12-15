@@ -18,20 +18,22 @@ connection.connect((err) => err && console.log(err));
 
 // Route 1: GET /user_saves/:email
 // a route that given an email, returns all the saves corresponding to that user
-const user_saves = async function(req, res) {
+const user_saves = async function (req, res) {
   connection.query(`
-    SELECT *
-    FROM Saves S
-    WHERE S.email = '${req.params.email}';
+  SELECT L.Name, L.Price, L.Neighborhood, L.City, 'AirBnB' AS ListingType
+  FROM Saves S
+  JOIN Airbnb A ON S.ListingID = A.ID
+  JOIN Listing L ON A.ID = L.ID
+  WHERE S.email = '${req.params.email}';
   `,
-   (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
-        res.json(data[0]);
-    }
-  });
+    (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json({});
+      } else {
+        res.json(data);
+      }
+    });
 
 }
 
@@ -122,34 +124,34 @@ const top_neighborhoods = async function(req, res) {
   LIMIT 5 
 
 ` ,
-  (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
+    (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json({});
+      } else {
         res.json(data);
-    }
-  });
+      }
+    });
 
 }
 
 // Route 6: GET /user_info/:email
 // This route gets all associated user information.
-const user_info = async function(req, res) {
+const user_info = async function (req, res) {
   connection.query(`
-  SELECT city, password
+  SELECT *
   FROM Users
   WHERE email = '${req.params.email}'
 
 ` ,
-  (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
+    (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json({});
+      } else {
         res.json(data);
-    }
-  });
+      }
+    });
 
 }
 
@@ -239,14 +241,14 @@ FROM Ls
 ORDER BY Price
 LIMIT 10  
 ` ,
-  (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
+    (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json({});
+      } else {
         res.json(data);
-    }
-  });
+      }
+    });
 
 }
 
@@ -263,18 +265,19 @@ const common_listings = async function(req, res) {
     p_diff_users AS (
     SELECT *
     FROM diff_users
-    WHERE s1_email = '${req.params.email}'
+    WHERE s1_email = 'user25@example.com'
     ), recommend_listings AS (
     SELECT *
     FROM p_diff_users p
     JOIN Saves s ON p.s2_email = s.email AND p.lID <> s.ListingID
+        LIMIT 20
     )
-    (SELECT ListingID
+    (SELECT DISTINCT ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'AirBnb' AS ListingType
     FROM recommend_listings rl
-    JOIN Airbnb a ON  rl.lID = a.Id
-    JOIN Listing l ON a.Id = l.Id)
+    JOIN Airbnb a ON  ListingID = a.Id
+    JOIN Listing l ON ListingID = l.Id)
     UNION
-    (SELECT ListingId
+    (SELECT DISTINCT ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'AirBnb' AS ListingType
     FROM recommend_listings rl
     JOIN Craigslist c ON  rl.lID = c.Id
     JOIN Listing l ON c.Id = l.Id)
@@ -285,8 +288,8 @@ const common_listings = async function(req, res) {
       res.json({});
     } else {
         res.json(data);
-    }
-  });
+      }
+    });
 
 }
 
@@ -294,39 +297,32 @@ const common_listings = async function(req, res) {
 // Route 10: GET /listings_above_average/:count
 // This query retrieves the names and emails of users who have listings priced above the average price of listing in the same city, 
 // AND have a total count of listings above a given listing count.
-const listings_above_average = async function(req, res) {
+const listings_above_average = async function (req, res) {
   connection.query(`
-  WITH UL AS (
-    SELECT S.id, U.name, S.email
-  FROM Users U JOIN Saves S ON U.email = S.email
-  ),
-  Count_df AS (
-  SELECT email, name, COUNT(*) AS count
-  FROM UL
-  GROUP BY email, name
-  HAVING COUNT(*) > ${req.params.count}
-  ),
-  SELECT DISTINCT U.name, U.email
-  FROM (
-  SELECT UL.id, UL.name, UL.email
-  FROM UL JOIN Count_df c ON c.email = UL.email
-  ) U JOIN Listing L ON U.id = L.id
-  WHERE L.price > (
-    SELECT AVG(price)
-    FROM Listings L2
-    WHERE L2.city = L.city
-  )
-  
-  
+  WITH UL AS (SELECT S.ListingID, S.email
+    FROM Saves S),
+Count_df AS (SELECT email, COUNT(*) AS count
+          FROM UL
+          GROUP BY email
+          HAVING COUNT(*) > 1000)
+SELECT DISTINCT U.email
+FROM (SELECT UL.ListingID, UL.email
+FROM UL
+       JOIN Count_df c ON c.email = UL.email) U
+ JOIN Listing L ON U.ListingID = L.id
+WHERE L.price > (SELECT AVG(price)
+         FROM Listing L2
+         WHERE L2.city = L.city)  
+LIMIT(20)  
 ` ,
-  (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json({});
-    } else {
+    (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json({});
+      } else {
         res.json(data);
-    }
-  });
+      }
+    });
 
 }
 
