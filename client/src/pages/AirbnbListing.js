@@ -1,6 +1,16 @@
-import React from 'react';
-import {Card, CardBody, Image, Stack, Heading, Text, Divider, CardFooter, ButtonGroup, Button} from '@chakra-ui/react'
-
+import React from "react";
+import {
+  Card,
+  CardBody,
+  Image,
+  Stack,
+  Heading,
+  Text,
+  Divider,
+  CardFooter,
+  ButtonGroup,
+  Button,
+} from "@chakra-ui/react";
 
 function AirbnbListing({name, city, price}) {
   return (
