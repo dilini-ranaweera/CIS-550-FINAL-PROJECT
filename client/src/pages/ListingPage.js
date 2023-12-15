@@ -42,12 +42,14 @@ const ListingPage = () => {
       fetch(`http://${config.server_host}:${config.server_port}/airbnb_no_craiglist`)
       .then(res => res.json())
       .then((data) => {
+        let showCraig = true
         data.forEach((city) => {
           if (city.City === searchInput) {
-            setShowCraigslist(false)
+            showCraig = false
           }
         });
-        if (showCraigslist) {
+        setShowCraigslist(showCraig)
+        if (showCraig) {
           fetch(`http://${config.server_host}:${config.server_port}/listings/craigslist?city=${searchInput}`)
             .then(res => res.json())
             .then((data) => {
@@ -67,12 +69,14 @@ const ListingPage = () => {
       fetch(`http://${config.server_host}:${config.server_port}/airbnb_no_craiglist`)
       .then(res => res.json())
       .then((data) => {
+        let showCraig = true
         data.forEach((city) => {
           if (city.City === searchInput) {
-            setShowCraigslist(false)
+            showCraig = false
           }
         });
-        if (showCraigslist) {
+        setShowCraigslist(showCraig)
+        if (showCraig) {
           fetch(`http://${config.server_host}:${config.server_port}/craigslist_in_price_range?price=${price}&city=${searchInput}`)
             .then(res => res.json())
             .then((data) => {
@@ -97,7 +101,7 @@ const ListingPage = () => {
         let air = []
         let craig = []
         data.forEach((listing) => {
-          if (listing.Type == "airbnb") {
+          if (listing.Type === "airbnb") {
             air.push({
               Name: listing.Name,
               Price: listing.Price,
