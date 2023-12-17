@@ -42,6 +42,7 @@ const ListingPage = () => {
   }, [location.state]);
 
   const searchListing = () => {
+    setShowAirBnb(true);
     if (priceInput === "") {
       fetch(`http://${config.server_host}:${config.server_port}/airbnb_no_craiglist`)
         .then(res => res.json())
