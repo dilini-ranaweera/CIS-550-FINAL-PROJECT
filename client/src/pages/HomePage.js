@@ -65,7 +65,7 @@ function HomePage() {
             }}
           >
             <Button size="lg" colorScheme="blue">
-              Search Cragislist
+              Search Craigslist
             </Button>
           </Link>
           <Link
