@@ -20,11 +20,17 @@ connection.connect((err) => err && console.log(err));
 // a route that given an email, returns all the saves corresponding to that user
 const user_saves = async function (req, res) {
   connection.query(`
-  SELECT L.Name, L.Price, L.Neighborhood, L.City, 'AirBnB' AS ListingType
+  (SELECT L.Name, L.Price, L.Neighborhood, L.City, 'AirBnB' AS ListingType
   FROM Saves S
   JOIN Airbnb A ON S.ListingID = A.ID
   JOIN Listing L ON A.ID = L.ID
-  WHERE S.email = '${req.params.email}';
+  WHERE S.email = '${req.params.email}')
+  UNION(
+  SELECT L.Name, L.Price, L.Neighborhood, L.City, 'Craigslist' AS ListingType
+  FROM Saves S
+  JOIN Craigslist C ON S.ListingID = C.ID
+  JOIN Listing L ON C.ID = L.ID
+  WHERE S.email = '${req.params.email}');
   `,
     (err, data) => {
       if (err || data.length === 0) {
@@ -42,10 +48,14 @@ const user_saves = async function (req, res) {
 
 const airbnb_in_price_range = async function(req, res) {
   connection.query(`
-    SELECT Name, Price, Neighborhood, City, 'airbnb' AS Type
-      FROM Airbnb A JOIN Listing L ON A.id = L.id
-      WHERE L.price <= ${req.query.price} AND L.city = '${req.query.city}' AND L.Name IS NOT NULL
-` ,
+  SELECT Name, Price, Neighborhood, City, 'Airbnb' AS Type
+  FROM Airbnb A
+           JOIN (SELECT *
+                 FROM Listing
+                 WHERE price <= '${req.query.price}'
+                 AND city = '${req.query.city}' AND Name IS NOT NULL) L
+              ON A.id = L.id;
+  ` ,
   (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
@@ -58,10 +68,14 @@ const airbnb_in_price_range = async function(req, res) {
 
 const craigslist_in_price_range = async function(req, res) {
   connection.query(`
-  SELECT Name, Price, Neighborhood, City, 'craigslist' AS Type
-  FROM Craigslist C JOIN Listing L ON C.id = L.id
-  WHERE L.price / 30 <= ${req.query.price} AND L.city = '${req.query.city}' AND L.Name IS NOT NULL
-` ,
+  SELECT Name, Price, Neighborhood, City, 'Airbnb' AS Type
+  FROM Craigslist C
+           JOIN (SELECT *
+                 FROM Listing
+                 WHERE price/30 <= '${req.query.price}'
+                 AND city = '${req.query.city}' AND Name IS NOT NULL) L
+              ON C.id = L.id;
+  ` ,
   (err, data) => {
     if (err || data.length === 0) {
       console.log(err);
@@ -163,7 +177,7 @@ const user_info = async function (req, res) {
 // This query selects all Airbnb listings in cities without craigslist
 const airbnb_no_craiglist = async function(req, res) {
   connection.query(`
-  WITH Cl AS (SELECT C.id, L.Name, L.Price, L.Neighborhood, L.City, C.Date
+WITH Cl AS (SELECT C.id, L.Name, L.Price, L.Neighborhood, L.City, C.Date
     FROM Craigslist C JOIN Listing L ON C.id = L.id),
 No_Craig AS (SELECT City
 FROM Airbnb A
@@ -223,7 +237,7 @@ WHERE L.city = '${req.query.city}'
 }
 
 
-// Route 8: GET /top_rentals/:neighborhood
+// Route 8: GET /top_rentals/:city
 // This query selects the top 10 rentals in Craigslist/Airbnb with lowest price by day (Craigslist gives monthly prices)
 const top_rentals = async function(req, res) {
   connection.query(`
@@ -256,35 +270,32 @@ LIMIT 10
 // Route 9: GET /common_listings/:email
 // For a given user x, this query selects other listings that have been saved by other users who have saved listings in common with x.
 const common_listings = async function(req, res) {
+  console.log(req.params.email);
   connection.query(`
   WITH diff_users AS (
     SELECT s.email AS s1_email, s.ListingID As lID, s2.email AS s2_email
     FROM Saves s
     JOIN Saves s2 ON s.ListingID = s2.ListingID AND s.email <> s2.email
+    WHERE s.Email = '${req.params.email}'
     ),
-    p_diff_users AS (
-    SELECT *
-    FROM diff_users
-    WHERE s1_email = 'user25@example.com'
-    ), recommend_listings AS (
-    SELECT *
-    FROM p_diff_users p
-    JOIN Saves s ON p.s2_email = s.email AND p.lID <> s.ListingID
+    recommend_listings AS (
+    SELECT s3.ListingID
+    FROM diff_users d
+    JOIN Saves s3 ON d.s2_email = s3.email AND d.lID <> s3.ListingID
         LIMIT 20
     )
-    (SELECT DISTINCT ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'AirBnb' AS ListingType
+    (SELECT DISTINCT rl.ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'AirBnb' AS ListingType
     FROM recommend_listings rl
-    JOIN Airbnb a ON  ListingID = a.Id
+    JOIN Airbnb a ON  rl.ListingID = a.Id
     JOIN Listing l ON ListingID = l.Id)
     UNION
-    (SELECT DISTINCT ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'AirBnb' AS ListingType
+    (SELECT DISTINCT rl.ListingID, l.Name, l.Price, l.Neighborhood, l.City, 'CraigsList' AS ListingType
     FROM recommend_listings rl
-    JOIN Craigslist c ON  rl.lID = c.Id
-    JOIN Listing l ON c.Id = l.Id)
+    JOIN Craigslist c ON  rl.ListingID = c.Id
+    JOIN Listing l ON c.Id = l.Id);
 ` ,
   (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
+    if ( data.length === 0) {
       res.json({});
     } else {
         res.json(data);
@@ -294,27 +305,14 @@ const common_listings = async function(req, res) {
 }
 
 
-// Route 10: GET /listings_above_average/:count
+// Route 10: GET /listings_above_average/:email
 // This query retrieves the names and emails of users who have listings priced above the average price of listing in the same city, 
 // AND have a total count of listings above a given listing count.
 const listings_above_average = async function (req, res) {
   connection.query(`
-  WITH UL AS (SELECT S.ListingID, S.email
-    FROM Saves S),
-Count_df AS (SELECT email, COUNT(*) AS count
-          FROM UL
-          GROUP BY email
-          HAVING COUNT(*) > 1000)
-SELECT DISTINCT U.email
-FROM (SELECT UL.ListingID, UL.email
-FROM UL
-       JOIN Count_df c ON c.email = UL.email) U
- JOIN Listing L ON U.ListingID = L.id
-WHERE L.price > (SELECT AVG(price)
-         FROM Listing L2
-         WHERE L2.city = L.city)  
-LIMIT(20)  
-` ,
+SELECT *
+FROM listings_above_average
+WHERE Email = '${req.params.email}'` ,
     (err, data) => {
       if (err || data.length === 0) {
         console.log(err);
@@ -325,6 +323,7 @@ LIMIT(20)
     });
 
 }
+
 
 module.exports = {
   user_saves,
