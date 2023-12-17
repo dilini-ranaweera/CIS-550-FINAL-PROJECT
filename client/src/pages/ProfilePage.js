@@ -27,65 +27,6 @@ const fetchUserSaves = async (email) => {
   }
 };
 
-const UserSavesTable = () => {
-  const email = 'user25@example.com'; // Replace with the desired email
-  const [userSaves, setUserSaves] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserSavesAndSetState = async () => {
-      try {
-        const result = await fetchUserSaves(email);
-        setUserSaves(result);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserSavesAndSetState();
-  }, [email]);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
-  return (
-    <VStack  justify="center" w = "100%">
-      <Flex borderWidth="1px" w="100%" shadow="md" justify="center">
-        <Text fontSize="xl" fontWeight="bold" textAlign="center" >
-          My Saved Listings
-        </Text>
-      </Flex>
-
-      <Flex w="100%">
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Price</Th>
-              <Th>Neighborhood</Th>
-              <Th>City</Th>
-              <Th>Listing Type</Th>
-
-            </Tr>
-          </Thead>
-          <Tbody>
-            {userSaves.map((save) => (
-              <Tr key={save.ListingID}>
-                <Td>{save.Name}</Td>
-                <Td>{save.Price}</Td>
-                <Td>{save.Neighborhood}</Td>
-                <Td>{save.City}</Td>
-                <Td>{save.ListingType}</Td>
-
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Flex>
-    </VStack>
-  );
-};
 
 const fetchCommonSaves = async (email) => {
   try {
@@ -99,71 +40,13 @@ const fetchCommonSaves = async (email) => {
   }
 };
 
-const CommonSavesTable = () => {
-  const email = 'user25@example.com'; // Replace with the desired email
-  const [commonSaves, setCommonSaves] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchCommonSavesAndSetState = async () => {
-      try {
-        const result = await fetchCommonSaves(email);
-        setCommonSaves(result);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCommonSavesAndSetState();
-  }, [email]);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
-  return (
-    <VStack  justify="center" w = "100%">
-      <Flex borderWidth="1px" w="100%" shadow="md" justify="center">
-        <Text fontSize="xl" fontWeight="bold" textAlign="center" >
-          Other People Saved...
-        </Text>
-      </Flex>
-
-      <Flex w="100%">
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Price</Th>
-              <Th>Neighborhood</Th>
-              <Th>City</Th>
-              <Th>Listing Type</Th>
-
-            </Tr>
-          </Thead>
-          <Tbody>
-            {commonSaves.map((save) => (
-              <Tr key={save.ListingID}>
-                <Td>{save.Name}</Td>
-                <Td>{save.Price}</Td>
-                <Td>{save.Neighborhood}</Td>
-                <Td>{save.City}</Td>
-                <Td>{save.ListingType}</Td>
-
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Flex>
-    </VStack>
-  );
-};
 
 
 function ProfilePage() {
   const [me, setMe] = useState({});
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('user25@example.com');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
@@ -174,10 +57,14 @@ function ProfilePage() {
   const [showLocation, setShowLocation] = useState(true);
   const [showBio, setShowBio] = useState(true);
   const [photoURL, setPhotoURL] = useState();
+  const [newEmail, setNewEmail] = useState('')
+  const [showPriceAlert, setPriceAlert] = useState(false)
+  const [commonSaves, setCommonSaves] = useState([]);
+  const [userSaves, setUserSaves] = useState([]);
 
   const getMe = async () => {
     try {
-      const res = await fetch(`http://${config.server_host}:${config.server_port}/user_info/user25@example.com`);
+      const res = await fetch(`http://${config.server_host}:${config.server_port}/user_info/${email}`);
       if (res.ok) {
         const data = await res.json();
         setMe(data[0]);
@@ -191,7 +78,7 @@ function ProfilePage() {
   };
 
   const getMyData = async () => {
-    setEmail(me.Email);
+    //setEmail(me.Email);
     setLocation(me.City);
     setName(me.Name);
     setBio(me.Bio);
@@ -210,6 +97,35 @@ function ProfilePage() {
     // setShowBio(true);
     // editUser(me.username, payload);
   };
+
+  const changeEmail = async () => {
+    setShowEmail(true);
+    setShowName(true);
+    setShowLocation(true);
+    setShowDiet(true);
+    setShowBio(true);
+    setEmail(newEmail);
+  };
+
+  const getPriceAlert = async () => {
+    try {
+      const res = await fetch(`http://${config.server_host}:${config.server_port}/listings_above_average/${email}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Object.keys(data).length === 0) {
+          setPriceAlert(false);
+        }else {
+          setPriceAlert(true);
+        }
+      } else {
+        console.error('Error fetching user data', res.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching user data', error);
+    }
+
+  }
+
 
   function closeName() {
     getMyData();
@@ -238,7 +154,27 @@ function ProfilePage() {
 
   useEffect(() => {
     getMe();
-  }, []);
+    getPriceAlert();
+    const fetchCommonSavesAndSetState = async () => {
+      try {
+        const result = await fetchCommonSaves(email);
+        setCommonSaves(result);
+      } finally {
+      }
+    };
+
+    fetchCommonSavesAndSetState();
+    const fetchUserSavesAndSetState = async () => {
+      try {
+        const result = await fetchUserSaves(email);
+        setUserSaves(result);
+      } finally {
+      }
+    };
+
+    fetchUserSavesAndSetState();
+
+  }, [email]);
 
   useEffect(() => {
     getMyData(); // Log the updated state in useEffect
@@ -294,8 +230,8 @@ function ProfilePage() {
               )
               : (
                 <Flex direction="row">
-                  <Input w="50%" variant="outline" placeholder="Email" mr={3} onChange={(e) => setEmail(e.target.value)} />
-                  <Button mr={3} onClick={() => { makeChange('email', email); }}>
+                  <Input w="50%" variant="outline" placeholder="Email" mr={3} onChange={(e) => setNewEmail(e.target.value)} />
+                  <Button mr={3} onClick={() => { changeEmail(); }}>
                     Save
                   </Button>
                   <Button onClick={() => closeEmail()}>Cancel</Button>
@@ -322,16 +258,90 @@ function ProfilePage() {
           </VStack>
         </Box>
       </Flex>
+      {showPriceAlert ? (
+        <Flex w="100%" shadow="md" borderWidth="1px" bg="red.100" align="center" justify="center">
+          <Text fontWeight="bold" fontSize="xl">
+            Alert: A high number of your saved listings are above average price for their location
+          </Text>
+        </Flex>
+      ) : null
+      }
       {/* UserSavesTable component added here */}
       <Flex w="100%" shadow="md" borderWidth="1px">
-        <UserSavesTable />
+        <VStack justify="center" w="100%">
+          <Flex borderWidth="1px" w="100%" shadow="md" justify="center">
+            <Text fontSize="xl" fontWeight="bold" textAlign="center" >
+              My Saved Listings
+            </Text>
+          </Flex>
+
+          <Flex w="100%">
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th>Price</Th>
+                  <Th>Neighborhood</Th>
+                  <Th>City</Th>
+                  <Th>Listing Type</Th>
+
+                </Tr>
+              </Thead>
+              <Tbody>
+                {userSaves.map((save) => (
+                  <Tr key={save.ListingID}>
+                    <Td>{save.Name}</Td>
+                    <Td>{save.Price}</Td>
+                    <Td>{save.Neighborhood}</Td>
+                    <Td>{save.City}</Td>
+                    <Td>{save.ListingType}</Td>
+
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Flex>
+        </VStack>
       </Flex>
 
       <Flex w="100%" shadow="md" borderWidth="1px">
-        <CommonSavesTable />
+        <VStack justify="center" w="100%">
+          <Flex borderWidth="1px" w="100%" shadow="md" justify="center">
+            <Text fontSize="xl" fontWeight="bold" textAlign="center" >
+              Other People Saved...
+            </Text>
+          </Flex>
+
+          <Flex w="100%">
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th>Price</Th>
+                  <Th>Neighborhood</Th>
+                  <Th>City</Th>
+                  <Th>Listing Type</Th>
+
+                </Tr>
+              </Thead>
+              <Tbody>
+                {commonSaves.map((save) => (
+                  <Tr key={save.ListingID}>
+                    <Td>{save.Name}</Td>
+                    <Td>{save.Price}</Td>
+                    <Td>{save.Neighborhood}</Td>
+                    <Td>{save.City}</Td>
+                    <Td>{save.ListingType}</Td>
+
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Flex>
+        </VStack>
       </Flex>
 
-    </VStack>
+    </VStack >
   );
 }
 
